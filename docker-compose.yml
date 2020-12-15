@@ -16,35 +16,21 @@ services:
       - "25565:25565/tcp"
       - "25575:25575/udp"
       - "25575:25575/tcp"
-  scp-server:
-    network_mode: host
+  ddns-route53:
+    image: crazymax/ddns-route53:latest
+    container_name: ddns-route53
+    environment:
+      - "TZ=America/Los_Angeles"
+      - "SCHEDULE=0 * * * *"
+      - "LOG_LEVEL=info"
+      - "LOG_JSON=false"
+      - "DDNSR53_CREDENTIALS_ACCESSKEYID=${AWS_ACCESS_KEY_ID}"
+      - "DDNSR53_CREDENTIALS_SECRETACCESSKEY=${AWS_SECRET_ACCESS_KEY}"
+      - "DDNSR53_ROUTE53_HOSTEDZONEID=${HOSTED_ZONE_ID}"
+      - "DDNSR53_ROUTE53_RECORDSSET_0_NAME=${RECORD_NAME}"
+      - "DDNSR53_ROUTE53_RECORDSSET_0_TYPE=A"
+      - "DDNSR53_ROUTE53_RECORDSSET_0_TTL=300"
     restart: always
-    build: ./scp-server
-    privileged: false
-    labels:
-      io.balena.features.dbus: 1
-    volumes:
-      - serverfiles:/serverfiles
-      - servercache:/servercache
-    ports:
-      - "22:22/udp"
-      - "22:22/tcp"
-  wifi-connect:
-    build: ./wifi-connect
-    restart: always
-    network_mode: host
-    privileged: true
-    labels:
-      io.balena.features.dbus: '1'
-      io.balena.features.firmware: '1'
-  balena-rcon:
-    network_mode: host
-    restart: always
-    build: ./balena-rcon
-    privileged: true
-    ports:
-      - "25575:25575/udp"
-      - "25575:25575/tcp"
 volumes:
   serverfiles:
   servercache:
